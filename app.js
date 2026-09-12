@@ -1,3 +1,6 @@
+const Product = require('./Product')
+
+
 require ('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
@@ -29,7 +32,8 @@ app.post('/login', async (req, res) => {
   );
 
   res.json({massege: 'Login successful!', token: token})
-})
+});
+
 
 
 function verifyToken(req, res, next){
@@ -47,7 +51,60 @@ function verifyToken(req, res, next){
         req.user = decoded;
         next();
   })
-}
+};
+
+app.post('/products', verifyToken, async (req, res) => {
+  const newProduct = new Product({
+     name: req.body.name,
+     price: req.body.price
+  });
+
+  await newProduct.save();
+  res.status(201).json(newProduct)
+});
+
+app.get('/products/:id', verifyToken, async (req, res) => {
+  const product = await Product.findById(req.params.id);
+
+  if (!product) {
+    return res.status(404).send('Product nahi mila');
+  }
+
+  res.json(product);
+});
+
+app.get('/products', verifyToken, async (req, res) => {
+  const products = await Product.find();
+  res.json(products);
+});
+
+
+app.put('/products/:id', verifyToken, async (req, res) => {
+  const updatedProduct = await Product.findByIdAndUpdate(
+    req.params.id, 
+    { name: req.body.name, price: req.body.price},
+    {new: true}
+  );
+
+  if(!updatedProduct){
+    return res.status(404).send('Product nahii mila');
+  }
+
+  res.json(updatedProduct)
+});
+
+
+app.delete('/products/:id', verifyToken, async(req, res) => {
+  const deletedProduct = await Product.findByIdAndDelete(req.params.id)
+
+  if(!deletedProduct){
+    return res.status(404).send('Product nahii mila')
+  }
+
+  res.json({message: 'Product delete ho gya', deletedProduct})
+})
+
+
 
 app.get('/profile', verifyToken, (req, res) => {
   res.json({message: 'Ye protected route hao', user: req.user});
