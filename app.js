@@ -54,55 +54,87 @@ function verifyToken(req, res, next){
 };
 
 app.post('/products', verifyToken, async (req, res) => {
-  const newProduct = new Product({
+  try{
+     const newProduct = new Product({
      name: req.body.name,
      price: req.body.price
   });
 
   await newProduct.save();
   res.status(201).json(newProduct)
+  }catch(error){
+      res.status(500).json({message:'Error catching product', error:error.message})
+  }
+ 
 });
 
 app.get('/products/:id', verifyToken, async (req, res) => {
-  const product = await Product.findById(req.params.id);
-
-  if (!product) {
+  
+  try{
+    const product = await Product.findById(req.params.id);
+    if (!product) {
     return res.status(404).send('Product nahi mila');
   }
-
   res.json(product);
+}
+
+  catch(error){
+    res.status(500).json({message: 'Server mein error aagye', error: error.message});
+  }
+
+
 });
 
 app.get('/products', verifyToken, async (req, res) => {
-  const products = await Product.find();
-  res.json(products);
+  try{
+    const products = await Product.find();
+    res.json(products);
+  }
+  catch(error){
+      res.status(500).json({message: "Server error", error: error.message})
+  }
+
 });
 
 
 app.put('/products/:id', verifyToken, async (req, res) => {
-  const updatedProduct = await Product.findByIdAndUpdate(
-    req.params.id, 
-    { name: req.body.name, price: req.body.price},
-    {new: true}
-  );
-
+  try{
+       const updatedProduct = await Product.findByIdAndUpdate(
+      req.params.id, 
+      { name: req.body.name, price: req.body.price},
+      {new: true}
+    );
+    
   if(!updatedProduct){
     return res.status(404).send('Product nahii mila');
   }
 
   res.json(updatedProduct)
+
+  } catch(error){
+    res.status(500).json({message: "invalid id format", error: error.message})
+  }
+ 
 });
 
 
 app.delete('/products/:id', verifyToken, async(req, res) => {
-  const deletedProduct = await Product.findByIdAndDelete(req.params.id)
+
+  try{
+    const deletedProduct = await Product.findByIdAndDelete(req.params.id)
 
   if(!deletedProduct){
     return res.status(404).send('Product nahii mila')
   }
 
   res.json({message: 'Product delete ho gya', deletedProduct})
+
+
+  }catch(error){
+    res.status(500).json({message:"invalid id format", error: error.message})
+  }
 })
+  
 
 
 
@@ -111,7 +143,9 @@ app.get('/profile', verifyToken, (req, res) => {
 })
 
 app.post('/signup',async (req, res) => {
-  const hashedPassword = await bcrypt.hash(req.body.password, 10);
+
+  try{
+        const hashedPassword = await bcrypt.hash(req.body.password, 10);
 
   const newUser = new User({
     username: req.body.username,
@@ -120,6 +154,10 @@ app.post('/signup',async (req, res) => {
 
   await newUser.save();
   res.status(201).json({message: 'User succesfully done'})
+  }catch(error){
+    res.status(500).json({message:"Invalid id format", error: error.message})
+  }
+  
 })
 
 
