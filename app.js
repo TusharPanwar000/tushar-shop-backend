@@ -1,4 +1,5 @@
 const Product = require('./Product')
+const cors = require('cors')
 
 
 require ('dotenv').config();
@@ -10,6 +11,7 @@ const jwt = require('jsonwebtoken');
 
 const app = express();
 app.use(express.json());
+app.use(cors());
 
 
 app.post('/login', async (req, res) => {
@@ -37,7 +39,9 @@ app.post('/login', async (req, res) => {
 
 
 function verifyToken(req, res, next){
+  console.log('All Header', req.headers)
   const token = req.headers['authorization'];
+  console.log('Recevied Token', token)
 
   if(!token){
     return res.status(401).send('Token nahii mila')
@@ -45,6 +49,7 @@ function verifyToken(req, res, next){
 
   jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
     if(err){
+      console.log('JWT Error', err.message)
       return res.status(403).send('token invalid hai');
         };
 
