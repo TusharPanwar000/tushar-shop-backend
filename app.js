@@ -1,5 +1,6 @@
 const Product = require('./Product')
 const cors = require('cors')
+const {asyncHandler} = require('./utils/asyncHandler.js')
 
 
 require ('dotenv').config();
@@ -58,8 +59,8 @@ function verifyToken(req, res, next){
   })
 };
 
-app.post('/products', verifyToken, async (req, res) => {
-  try{
+app.post('/products', verifyToken, asyncHandler(async (req, res) => {
+
      const newProduct = new Product({
      name: req.body.name,
      price: req.body.price
@@ -67,43 +68,34 @@ app.post('/products', verifyToken, async (req, res) => {
 
   await newProduct.save();
   res.status(201).json(newProduct)
-  }catch(error){
-      res.status(500).json({message:'Error catching product', error:error.message})
-  }
  
-});
+ 
+}));
 
-app.get('/products/:id', verifyToken, async (req, res) => {
+app.get('/products/:id', verifyToken, asyncHandler(async (req, res) => {
   
-  try{
+ 
     const product = await Product.findById(req.params.id);
     if (!product) {
     return res.status(404).send('Product nahi mila');
   }
   res.json(product);
-}
-
-  catch(error){
-    res.status(500).json({message: 'Server mein error aagye', error: error.message});
-  }
 
 
-});
 
-app.get('/products', verifyToken, async (req, res) => {
-  try{
+}));
+
+app.get('/products', verifyToken, asyncHandler(async (req, res) => {
+  
     const products = await Product.find();
     res.json(products);
   }
-  catch(error){
-      res.status(500).json({message: "Server error", error: error.message})
-  }
-
-});
+ 
+));
 
 
-app.put('/products/:id', verifyToken, async (req, res) => {
-  try{
+app.put('/products/:id', verifyToken, asyncHandler(async (req, res) => {
+  
        const updatedProduct = await Product.findByIdAndUpdate(
       req.params.id, 
       { name: req.body.name, price: req.body.price},
@@ -116,16 +108,14 @@ app.put('/products/:id', verifyToken, async (req, res) => {
 
   res.json(updatedProduct)
 
-  } catch(error){
-    res.status(500).json({message: "invalid id format", error: error.message})
-  }
  
-});
+ 
+}));
 
 
-app.delete('/products/:id', verifyToken, async(req, res) => {
+app.delete('/products/:id', verifyToken, asyncHandler(async(req, res) => {
 
-  try{
+  
     const deletedProduct = await Product.findByIdAndDelete(req.params.id)
 
   if(!deletedProduct){
@@ -135,10 +125,8 @@ app.delete('/products/:id', verifyToken, async(req, res) => {
   res.json({message: 'Product delete ho gya', deletedProduct})
 
 
-  }catch(error){
-    res.status(500).json({message:"invalid id format", error: error.message})
-  }
-})
+ 
+}))
   
 
 
@@ -147,9 +135,9 @@ app.get('/profile', verifyToken, (req, res) => {
   res.json({message: 'Ye protected route hao', user: req.user});
 })
 
-app.post('/signup',async (req, res) => {
+app.post('/signup', asyncHandler(async (req, res) => {
 
-  try{
+  
         const hashedPassword = await bcrypt.hash(req.body.password, 10);
 
   const newUser = new User({
@@ -159,11 +147,9 @@ app.post('/signup',async (req, res) => {
 
   await newUser.save();
   res.status(201).json({message: 'User succesfully done'})
-  }catch(error){
-    res.status(500).json({message:"Invalid id format", error: error.message})
-  }
   
-})
+  
+}));
 
 
 
@@ -175,3 +161,7 @@ mongoose.connect(process.env.MONGO_URl)
 app.listen(3000, () => {
   console.log('Server chal raaha hai https://localhost:3000 pr ')
 })
+
+
+
+
